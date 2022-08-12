@@ -260,11 +260,11 @@ EOF
 
 # Look up the DC's AD DNS record:
 echo -e "${Cyan} Look up the DC's AD DNS record\n ${ColorOff}"
-host -t A ${REALM}
-host -t A ${NETBIOS}.${REALM}
-host -t SRV _ldap._tcp.${REALM}
-host -t SRV _kerberos._tcp.${REALM}
-host -t SRV _kerberos._udp.${REALM}
+host -t A ${REALM,,}
+host -t A ${NETBIOS,,}.${REALM,,}
+host -t SRV _ldap._tcp.${REALM,,}
+host -t SRV _kerberos._tcp.${REALM,,}
+host -t SRV _kerberos._udp.${REALM,,}
 
 echo -e $BWhite; read -p ' Press [Enter] key to continue...'; echo -e $ColorOff
 
