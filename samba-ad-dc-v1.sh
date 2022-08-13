@@ -68,7 +68,7 @@ apt update && apt -y dist-upgrade
 # Instalamos samba y todas sus dependencias
 echo -e "${Cyan} \n Instalamos samba y todas sus dependencias\n ${ColorOff}"
 DEBIAN_FRONTEND=noninteractive apt -y install \
-    samba smbclient krb5-user winbind libpam-winbind libnss-winbind xattr sudo acl
+    samba smbclient krb5-user winbind libpam-winbind libnss-winbind xattr sudo acl bc
 
 # Tweaks to samba services
 systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
