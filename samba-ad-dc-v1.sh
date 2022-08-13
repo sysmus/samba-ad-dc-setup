@@ -38,8 +38,10 @@ clear
 echo -e "${Yellow}"
 cat << EOF
  #############################################################
- ### Instalacion automatizada de un controlador de dominio ###
- ###        sobre SAMBA4 para sistemas Debian 10/11        ###
+ ###                                                       ###
+ ### INSTALACION AUTOMATIZADA DE UN CONTROLADOR DE DOMINIO ###
+ ###           ACTIVE DIRECTORY BASADO EN SAMBA4           ###
+ ###                                                       ###
  #############################################################
 EOF
 
@@ -53,75 +55,77 @@ EOF
 echo "dash dash/sh boolean false" | debconf-set-selections
 DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash 2> /dev/null
 
-# Set temporal public dns
+# Set public DNS - it's temporary
 cat << EOF > /etc/resolv.conf
 nameserver	9.9.9.9
 nameserver	8.8.8.8
 EOF
 
-# Check packages & upgrade system
+# Actualizamos el sistema
 echo -e "${Cyan} \n Actualizamos el sistema\n ${ColorOff}"
-apt update
-apt dist-upgrade -y
+apt update && apt -y dist-upgrade
 
-# Check sudo command
-if [ -z $(which sudo) ]; then
-    echo -e "${Cyan} \n Installing sudo\n ${ColorOff}"
-    apt install sudo -y
-fi
-
-# Install samba packages & dependencies
-echo -e "${Cyan} \n Instalamos paqueteria samba\n ${ColorOff}"
-DEBIAN_FRONTEND=noninteractive apt install \
-    samba smbclient krb5-user winbind libpam-winbind libnss-winbind xattr acl -y
+# Instalamos samba y todas sus dependencias
+echo -e "${Cyan} \n Instalamos samba y todas sus dependencias\n ${ColorOff}"
+DEBIAN_FRONTEND=noninteractive apt -y install \
+    samba smbclient krb5-user winbind libpam-winbind libnss-winbind xattr sudo acl
 
 # Tweaks to samba services
-systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service
-systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service
+systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
+systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
 
 clear
 echo -e "${Yellow}"
 cat << EOF
- ##################################################
- ## PROMOTE THIS SERVER INTO A DOMAIN CONTROLLER ##
- ##################################################
+ #############################################################
+ ###                                                       ###
+ ###    APROVISIONAMIENTO DE DIRECTORIO ACTIVO DE SAMBA    ###
+ ###           DEBE PROPORCIONAR DATOS CORRECTOS           ###
+ ###                                                       ###
+ #############################################################
 EOF
 
-# Add a new forest
+# ADD A NEW FOREST
 echo -e "${Green}"
 cat << EOF
- -------------------------------------------
- Add a new forest -- Specify the domain name
- -------------------------------------------
+ --------------------------------------------------------
+
+ AGREGAR NUEVO BOSQUE -- ESPECIFIQUE SU NOMBRE DE DOMINIO
+
+ --------------------------------------------------------
 EOF
 echo
-printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Type root domain name: " "$(tput sgr0)"
+printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Nombre de dominio raíz: " "$(tput sgr0)"
 read REALM
 
 REALM=$(echo ${REALM} | tr '[:upper:]' '[:lower:]')
 
-# The NetBIOS domain name
+# THE NETBIOS DOMAIN NAME
 echo -e "${Green}"
 cat << EOF
- -----------------------------------------------------------
- The NetBIOS domain -- It is preferable to match the NetBIOS
- -----------------------------------------------------------
+ ------------------------------------------------------------
+
+ EL DOMINIO NETBIOS -- ES PREFERIBLE QUE COINCIDA CON NETBIOS
+
+ ------------------------------------------------------------
 EOF
 echo
-printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Type the name your workgroup: " "$(tput sgr0)"
+printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Nombre del grupo de trabajo: " "$(tput sgr0)"
 read DOMAIN
 
 DOMAIN=$(echo ${DOMAIN} | tr '[:upper:]' '[:lower:]')
 
-# Administrator password
+# ADMINISTRATOR PASSWORD
 echo -e "${Green}"
 cat << EOF
- ---------------------------------------------------------------------
- Type your Administrator password -- Must meet complexity requirements
- ---------------------------------------------------------------------
+ -----------------------------------------------------------------------------
+
+ CONTRASEÑA DE ADMINISTRADOR -- DEBE CUMPLIR CON LOS REQUISITOS DE COMPLEJIDAD
+
+ -----------------------------------------------------------------------------
 EOF
 echo
-printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Type your administrator password: " "$(tput sgr0)"
+printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Contraseña de administrador: " "$(tput sgr0)"
 
 unset PASSWORD
 unset CHARCOUNT
@@ -159,10 +163,8 @@ echo;echo
 
 # Now we'll copy the krb5.conf kerberos
 cp /etc/krb5.conf{,.orig}
-
 # Now we'll copy the smb.conf samba
 cp /etc/samba/smb.conf{,.orig}
-
 # Now we'll copy the nsswitch
 cp /etc/nsswitch.conf{,.orig}
 
@@ -173,7 +175,7 @@ cat << EOF > /etc/samba/smb.conf
     netbios name = ${NETBIOS^^}
 	realm = ${REALM^^}
 	server role = active directory domain controller
-    server string = Samba4 AD DC
+    server string = Samba4 AD DC Server
 	workgroup = ${DOMAIN^^}
 	idmap_ldb:use rfc2307 = yes
 	allow dns updates = nonsecure
@@ -252,7 +254,7 @@ rpc:            db files
 netgroup:       nis
 EOF
 
-# Converting to dns server
+# Converting to primary DNS
 cat << EOF > /etc/resolv.conf
 search ${REALM,,}
 domain ${REALM,,}
@@ -260,11 +262,18 @@ nameserver	${IP}
 EOF
 
 # Next, we need to adjust the Debian default settings for the samba services.
-systemctl stop smbd nmbd winbind
-systemctl disable smbd nmbd winbind
-systemctl mask smbd nmbd winbind
-systemctl unmask samba-ad-dc
-systemctl enable samba-ad-dc
+adjustSamba=(
+    "systemctl stop smbd nmbd winbind"
+    "systemctl disable smbd nmbd winbind"
+    "systemctl mask smbd nmbd winbind"
+    "systemctl unmask samba-ad-dc"
+    "systemctl enable samba-ad-dc"
+)
+
+for ((i=0;i<=5;++i))
+do
+    eval "${adjustSamba[$i]}" &>/dev/null
+done
 
 samba-tool domain provision \
     --use-rfc2307 \
@@ -273,6 +282,8 @@ samba-tool domain provision \
     --realm="${REALM^^}" \
     --domain="${DOMAIN^^}" \
     --adminpass="${ADMINPASS}"
+
+echo
 
 # And finally, we'll start the Samba AD DC service:
 systemctl start samba-ad-dc
@@ -283,11 +294,11 @@ echo -e $BWhite; read -p ' Press [Enter] key to continue...'; echo -e $ColorOff
 
 # Look up the DC's AD DNS record:
 echo -e "${Cyan} Look up the DC's AD DNS record\n ${ColorOff}"
-host -t A ${REALM}
-host -t A ${NETBIOS}.${REALM}
-host -t SRV _ldap._tcp.${REALM}
-host -t SRV _kerberos._tcp.${REALM}
-host -t SRV _kerberos._udp.${REALM}
+host -t A ${REALM,,}
+host -t A ${NETBIOS,,}.${REALM,,}
+host -t SRV _ldap._tcp.${REALM,,}
+host -t SRV _kerberos._tcp.${REALM,,}
+host -t SRV _kerberos._udp.${REALM,,}
 
 echo -e $BWhite; read -p ' Press [Enter] key to continue...'; echo -e $ColorOff
 

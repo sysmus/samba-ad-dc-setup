@@ -93,13 +93,11 @@ REALM=$(cat /etc/krb5.conf | egrep default_realm | cut -d ' ' -f3)
 DOMAIN=$(echo $REALM | cut -d '.' -f1)
 
 # Now we'll copy the krb5.conf kerberos
-mv /etc/krb5.conf{,.orig}
-
+cp /etc/krb5.conf{,.orig}
 # Now we'll copy the smb.conf samba
-mv /etc/samba/smb.conf{,.orig}
-
+cp /etc/samba/smb.conf{,.orig}
 # Now we'll copy the nsswitch
-mv /etc/nsswitch.conf{,.orig}
+cp /etc/nsswitch.conf{,.orig}
 
 cat << EOF > /etc/samba/smb.conf
 # Global parameters
@@ -108,7 +106,7 @@ cat << EOF > /etc/samba/smb.conf
     netbios name = ${NETBIOS^^}
 	realm = ${REALM}
 	server role = active directory domain controller
-    server string = Samba4 AD DC
+    server string = Samba4 AD DC Server
 	workgroup = ${DOMAIN}
 	idmap_ldb:use rfc2307 = yes
 	allow dns updates = nonsecure
