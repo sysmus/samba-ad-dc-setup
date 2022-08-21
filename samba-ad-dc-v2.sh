@@ -52,18 +52,18 @@ else
 fi
 
 # Change the Default Shell
-<< EOF
- ----------------------------------------------------------------------------
- /bin/sh is a symlink to /bin/dash, however we need /bin/bash, not /bin/dash.
- ----------------------------------------------------------------------------
-EOF
+#<< EOF
+# ----------------------------------------------------------------------------
+# /bin/sh is a symlink to /bin/dash, however we need /bin/bash, not /bin/dash.
+# ----------------------------------------------------------------------------
+#EOF
 
 #echo "dash dash/sh boolean false" | debconf-set-selections
 #DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash &>/dev/null
 #unset DEBIAN_FRONTEND
 
 # Set public DNS - it's temporary
-cat << EOF >/etc/resolv.conf
+cat << EOF > /etc/resolv.conf
 nameserver	9.9.9.9
 nameserver	8.8.8.8
 EOF
@@ -83,8 +83,8 @@ debconf-apt-progress -- apt -y install \
     acl
 
 # Tweaks to samba services
-systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
-systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
+systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &> /dev/null
+systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &> /dev/null
 
 # Capturamos variables provenientes de krb5-config
 REALM=$(cat /etc/krb5.conf | egrep default_realm | cut -d ' ' -f3)
@@ -100,7 +100,7 @@ cp /etc/samba/smb.conf{,.orig}
 # Now we'll copy the nsswitch
 cp /etc/nsswitch.conf{,.orig}
 
-cat << EOF >/etc/samba/smb.conf
+cat << EOF > /etc/samba/smb.conf
 # Global parameters
 [global]
     dns forwarder = ${DNS}
@@ -151,7 +151,7 @@ cat << EOF >/etc/samba/smb.conf
 	read only = No
 EOF
 
-cat << EOF >/etc/krb5.conf
+cat << EOF > /etc/krb5.conf
 [libdefaults]
 	default_realm = ${REALM^^}
 	dns_lookup_realm = false
@@ -170,7 +170,7 @@ cat << EOF >/etc/krb5.conf
     ${REALM,,} = ${REALM^^}
 EOF
 
-cat << EOF >/etc/nsswitch.conf
+cat << EOF > /etc/nsswitch.conf
 passwd:         files winbind ldap
 group:          files winbind ldap
 shadow:         files winbind ldap
@@ -188,7 +188,7 @@ netgroup:       nis
 EOF
 
 # Converting to primary DNS
-cat << EOF >/etc/resolv.conf
+cat << EOF > /etc/resolv.conf
 nameserver 127.0.0.1
 search ${REALM,,}
 domain ${REALM,,}
@@ -207,7 +207,7 @@ adjustSamba=(
 
 for ((i=0;i<=5;++i))
 do
-    eval "${adjustSamba[$i]}" &>/dev/null
+    eval "${adjustSamba[$i]}" &> /dev/null
 done
 
 unset INPUT
@@ -222,7 +222,7 @@ samba-tool domain provision \
     --dns-backend=SAMBA_INTERNAL \
     --realm="${REALM^^}" \
     --domain="${DOMAIN^^}" \
-    --adminpass="${ADMINPASS}" &>/tmp/$0.log &
+    --adminpass="${ADMINPASS}" &> /tmp/$0.log &
 
 i=0
 while [ $i -ne 1 ]
@@ -243,8 +243,8 @@ done
 # And finally, we'll start the Samba AD DC service:
 systemctl start samba-ad-dc
 
-echo -e "\nSAMBA 4 AC DC ESTA COMPLETAMENTE OPERATIVO\n" >/tmp/$0.log
-samba-tool domain level show >>/tmp/$0.log
+echo -e "\nSAMBA 4 AC DC ESTA COMPLETAMENTE OPERATIVO\n" > /tmp/$0.log
+samba-tool domain level show >> /tmp/$0.log
 
 whiptail_message /tmp/$0.log 14 80
 
