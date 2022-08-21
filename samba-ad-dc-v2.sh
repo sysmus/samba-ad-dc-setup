@@ -90,7 +90,10 @@ systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service 
 
 # Capturamos variables provenientes de krb5-config
 REALM=$(cat /etc/krb5.conf | egrep default_realm | cut -d ' ' -f3)
+REALM=$(echo ${REALM} | tr '[:upper:]' '[:lower:]')
+
 DOMAIN=$(echo $REALM | cut -d '.' -f1)
+DOMAIN=$(echo ${DOMAIN} | tr '[:upper:]' '[:lower:]')
 
 # Now we'll copy the krb5.conf kerberos
 cp /etc/krb5.conf{,.orig}
@@ -105,14 +108,14 @@ cat << EOF > /etc/samba/smb.conf
     dns forwarder = ${DNS}
     interfaces = 127.0.0.1 ${IP}
     netbios name = ${NETBIOS^^}
-    realm = ${REALM}
+    realm = ${REALM^^}
     server role = active directory domain controller
     server string = Samba4 AD DC Server
-    workgroup = ${DOMAIN}
+    workgroup = ${DOMAIN^^}
     idmap_ldb:use rfc2307 = yes
     allow dns updates = nonsecure
     ldap server require strong auth = no
-    
+
     winbind use default domain = true
     winbind offline logon = false
     winbind nss info = rfc2307
@@ -152,21 +155,21 @@ EOF
 
 cat << EOF > /etc/krb5.conf
 [libdefaults]
-	default_realm = ${REALM}
+	default_realm = ${REALM^^}
 	dns_lookup_realm = false
 	dns_lookup_kdc = true
 
 [realms]
-    ${REALM} = {
-        kdc = ${NETBIOS}.${REALM}
-        master_kdc = ${NETBIOS}.${REALM}
-        admin_server = ${NETBIOS}.${REALM}
+    ${REALM^^} = {
+        kdc = ${NETBIOS^^}.${REALM^^}
+        master_kdc = ${NETBIOS^^}.${REALM^^}
+        admin_server = ${NETBIOS^^}.${REALM^^}
         default_domain = ${REALM,,}
     }
 
 [domain_realm]
-    .${REALM,,} = ${REALM}
-    ${REALM,,} = ${REALM}
+    .${REALM,,} = ${REALM^^}
+    ${REALM,,} = ${REALM^^}
 EOF
 
 cat << EOF > /etc/nsswitch.conf
@@ -219,8 +222,8 @@ samba-tool domain provision \
     --use-rfc2307 \
     --server-role=dc \
     --dns-backend=SAMBA_INTERNAL \
-    --realm="${REALM}" \
-    --domain="${DOMAIN}" \
+    --realm="${REALM^^}" \
+    --domain="${DOMAIN^^}" \
     --adminpass="${ADMINPASS}" &>/tmp/$0.log &
 
 i=0
