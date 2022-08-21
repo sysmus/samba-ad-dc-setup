@@ -242,7 +242,7 @@ done
 # And finally, we'll start the Samba AD DC service:
 systemctl start samba-ad-dc
 
-echo -e "\nSAMBA AC DC ESTA COMPLETAMENTE OPERATIVO\n" > /tmp/$0.log
+echo -e "\n:::SAMBA AC DC ESTA COMPLETAMENTE OPERATIVO:::\n" > /tmp/$0.log
 samba-tool domain level show >> /tmp/$0.log
 
 whiptail_message /tmp/$0.log 14 78
