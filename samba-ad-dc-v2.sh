@@ -76,17 +76,16 @@ debconf-apt-progress -- apt -y install \
     sudo \
     samba \
     smbclient \
-    winbind \
     libpam-winbind \
     libnss-winbind \
     krb5-user \
+    winbind \
     xattr \
-    acl \
-    bc
+    acl
 
 # Tweaks to samba services
-systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &> /dev/null
-systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &> /dev/null
+systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
+systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
 
 # Capturamos variables provenientes de krb5-config
 REALM=$(cat /etc/krb5.conf | egrep default_realm | cut -d ' ' -f3)
