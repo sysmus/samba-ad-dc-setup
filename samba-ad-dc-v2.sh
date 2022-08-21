@@ -221,12 +221,12 @@ samba-tool domain provision \
     --dns-backend=SAMBA_INTERNAL \
     --realm="${REALM^^}" \
     --domain="${DOMAIN^^}" \
-    --adminpass="${ADMINPASS}" &> /tmp/$0.log &
+    --adminpass="${ADMINPASS}" &> /tmp/$$.log &
 
 i=0
 while [ $i -ne 1 ]
 do
-    i=$(cat /tmp/$0.log | egrep 'DOMAIN SID' | wc -l)
+    i=$(cat /tmp/$$.log | egrep 'DOMAIN SID' | wc -l)
 {
     for ((i=0; i<=100; i+=1))
     do
@@ -242,10 +242,10 @@ done
 # And finally, we'll start the Samba AD DC service:
 systemctl start samba-ad-dc
 
-echo -e "\n:::SAMBA AC DC ESTA COMPLETAMENTE OPERATIVO:::\n" > /tmp/$0.log
-samba-tool domain level show >> /tmp/$0.log
+echo -e "\n:::SAMBA AC DC ESTA COMPLETAMENTE OPERATIVO:::\n" > /tmp/$$.log
+samba-tool domain level show >> /tmp/$$.log
 
-whiptail_message /tmp/$0.log 14 78
+whiptail_message /tmp/$$.log 14 78
 
 whiptail_message lib/success.md 12 72
 
