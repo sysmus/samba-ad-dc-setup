@@ -60,9 +60,9 @@ fi
  ----------------------------------------------------------------------------
 EOF
 
-echo "dash dash/sh boolean false" | debconf-set-selections
-DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash &> /dev/null
-unset DEBIAN_FRONTEND
+#echo "dash dash/sh boolean false" | debconf-set-selections
+#DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash &> /dev/null
+#unset DEBIAN_FRONTEND
 
 # Set public DNS - it's temporary
 cat << EOF > /etc/resolv.conf
@@ -103,26 +103,27 @@ cat << EOF > /etc/samba/smb.conf
 # Global parameters
 [global]
     dns forwarder = ${DNS}
+    interfaces = 127.0.0.1 ${IP}
     netbios name = ${NETBIOS^^}
-	realm = ${REALM}
-	server role = active directory domain controller
+    realm = ${REALM}
+    server role = active directory domain controller
     server string = Samba4 AD DC Server
-	workgroup = ${DOMAIN}
-	idmap_ldb:use rfc2307 = yes
-	allow dns updates = nonsecure
-	ldap server require strong auth = no
-
-	winbind use default domain = true
-	winbind offline logon = false
-	winbind nss info = rfc2307
-	password server = *
-	;winbind separator = +
-	winbind enum users = yes
-	winbind enum groups = yes
-	winbind uid = 10000-20000
-	winbind gid = 10000-20000
-	template homedir = /tmp
-	template shell = /bin/false
+    workgroup = ${DOMAIN}
+    idmap_ldb:use rfc2307 = yes
+    allow dns updates = nonsecure
+    ldap server require strong auth = no
+    
+    winbind use default domain = true
+    winbind offline logon = false
+    winbind nss info = rfc2307
+    password server = *
+    ;winbind separator = +
+    winbind enum users = yes
+    winbind enum groups = yes
+    winbind uid = 10000-20000
+    winbind gid = 10000-20000
+    template homedir = /tmp
+    template shell = /bin/false
 
 #### Debugging/Accounting ####
 
@@ -187,9 +188,11 @@ EOF
 
 # Converting to primary DNS
 cat << EOF > /etc/resolv.conf
+nameserver 127.0.0.1
 search ${REALM,,}
 domain ${REALM,,}
-nameserver  ${IP}
+nameserver ${DNS}
+options timeout:1
 EOF
 
 # Next, we need to adjust the Debian default settings for the samba services.
