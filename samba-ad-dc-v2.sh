@@ -38,17 +38,16 @@ IP=$(hostname -I)
 TITLE="SAMBA AD DC INSTALLER by <sysmus@hotmail.com>"
 BACKTITLE="::: SAMBA COMO CONTROLADOR DE DOMINIO"
 
-whiptail_message "lib/welcome.md" 22 100
+whiptail_message "lib/welcome.md" 22 96
 
 # If you cannot understand this, read Bash_Shell_Scripting#if_statements again.
 if (whiptail \
     --backtitle "$BACKTITLE" \
-    --title "$TITLE" \
-    --yesno "Desea continuar con esta instalación?" \
-    7 70); then
+    --title "$TITLE" --yes-button SI --no-button NO \
+    --yesno "Desea continuar con esta instalación?" 7 70); then
     echo ""
 else
-    exit 0
+    exit 1
 fi
 
 # Change the Default Shell
@@ -211,10 +210,10 @@ do
 done
 
 unset INPUT
-whiptail_password "\nIntroducimos la contraseña del administrador del dominio :::IMPORTANTE::: Se recomienda usar una contraseña con la siguiente estructura:\nNo inferior a 8 caracteres, contener al menos un carácter en mayúscula, uno en minúsculas y un numero."
+whiptail_password "\nEnter password for the new samba Domain 'Administrator'\naccount.\n\nPassword Requirements\n - must be at least 8 characters long\n - must contain characters from at least 3 of the following categories: uppercase, lowercase, numbers, symbols. Also must NOT contain these characters: ['(',')']" 17 59
 ADMINPASS=$INPUT
 
-whiptail_message 'lib/provision.md' 14 100
+whiptail_message 'lib/provision.md' 14 78
 
 samba-tool domain provision \
     --use-rfc2307 \
@@ -243,12 +242,12 @@ done
 # And finally, we'll start the Samba AD DC service:
 systemctl start samba-ad-dc
 
-echo -e "\nSAMBA 4 AC DC ESTA COMPLETAMENTE OPERATIVO\n" > /tmp/$0.log
+echo -e "\nSAMBA AC DC ESTA COMPLETAMENTE OPERATIVO\n" > /tmp/$0.log
 samba-tool domain level show >> /tmp/$0.log
 
-whiptail_message /tmp/$0.log 14 80
+whiptail_message /tmp/$0.log 14 78
 
-whiptail_message lib/success.md 12 70
+whiptail_message lib/success.md 12 72
 
 echo -e "$BCyan"
 cat << EOF
