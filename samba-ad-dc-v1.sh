@@ -44,14 +44,14 @@ cat << EOF
 EOF
 
 # Change the Default Shell
-<< EOF
- ----------------------------------------------------------------------------
- /bin/sh is a symlink to /bin/dash, however we need /bin/bash, not /bin/dash.
- ----------------------------------------------------------------------------
-EOF
-
-echo "dash dash/sh boolean false" | debconf-set-selections
-DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash 2> /dev/null
+#<< EOF
+# ----------------------------------------------------------------------------
+# /bin/sh is a symlink to /bin/dash, however we need /bin/bash, not /bin/dash.
+# ----------------------------------------------------------------------------
+#EOF
+#
+#echo "dash dash/sh boolean false" | debconf-set-selections
+#DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash 2> /dev/null
 
 # Set public DNS - it's temporary
 cat << EOF > /etc/resolv.conf
@@ -103,7 +103,7 @@ echo -e "${Green}"
 cat << EOF
  ------------------------------------------------------------
 
- EL DOMINIO NETBIOS -- ES PREFERIBLE QUE COINCIDA CON NETBIOS
+ EL DOMINIO NETBIOS -- TAMBIEN CONOCIDO COMO GRUPO DE TRABAJO
 
  ------------------------------------------------------------
 EOF
@@ -183,7 +183,7 @@ cat << EOF > /etc/samba/smb.conf
 	winbind offline logon = false
 	winbind nss info = rfc2307
 	password server = *
-	;winbind separator = +
+;	winbind separator = +
 	winbind enum users = yes
 	winbind enum groups = yes
 	winbind uid = 10000-20000
@@ -224,9 +224,9 @@ cat << EOF > /etc/krb5.conf
 
 [realms]
     ${REALM^^} = {
-        kdc = ${REALM^^}
-        master_kdc = ${REALM^^}
-        admin_server = ${REALM^^}
+        kdc = ${DOMAIN^^}.${REALM^^}
+        master_kdc = ${DOMAIN^^}.${REALM^^}
+        admin_server = ${DOMAIN^^}.${REALM^^}
         default_domain = ${REALM,,}
     }
 
@@ -254,9 +254,11 @@ EOF
 
 # Converting to primary DNS
 cat << EOF > /etc/resolv.conf
+nameserver 127.0.0.1
 search ${REALM,,}
 domain ${REALM,,}
-nameserver	${IP}
+nameserver ${IP}
+options timeout:1
 EOF
 
 # Next, we need to adjust the Debian default settings for the samba services.
