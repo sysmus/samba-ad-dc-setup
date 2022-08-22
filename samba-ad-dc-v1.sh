@@ -20,9 +20,7 @@
 
 set -e
 
-# IMPORTs
 . lib/ansicolors.sh
-. lib/functions.sh
 
 # Get hostname to netbios
 NETBIOS=$(echo $(hostname) | tr '[:upper:]' '[:lower:]')
