@@ -110,12 +110,19 @@ debconf-apt-progress -- apt -y install \
 systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &> /dev/null
 systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &> /dev/null
 
-# Now we'll copy the krb5.conf kerberos
-cp /etc/krb5.conf{,.orig}
-# Now we'll copy the smb.conf samba
-cp /etc/samba/smb.conf{,.orig}
-# Now we'll copy the nsswitch
-cp /etc/nsswitch.conf{,.orig}
+# Now we'll copy the krb5.conf
+if [ -f /etc/krb5.conf ]; then
+    cp /etc/krb5.conf{,.orig}
+fi
+# Now we'll copy the smb.conf
+if [ -f /etc/samba/smb.conf ]; then
+    cp /etc/samba/smb.conf{,.orig}
+fi
+# Now we'll copy the nsswitch.conf
+if [ -f /etc/nsswitch.conf ]
+then
+    cp /etc/nsswitch.conf{,.orig}
+fi
 
 # GET KERBEROS INFO
 REALM=$(cat /etc/krb5.conf | egrep default_realm | cut -d ' ' -f3)
