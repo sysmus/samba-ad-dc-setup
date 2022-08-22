@@ -20,9 +20,34 @@
 
 set -e
 
-# IMPORTs
 . lib/ansicolors.sh
-. lib/functions.sh
+
+# DIALOG/WHIPTAIL
+whiptail_message()
+{
+    whiptail \
+        --title "$TITLE" \
+        --backtitle "$BACKTITLE" \
+        --textbox "$1" "$2" "$3"
+}
+
+whiptail_input()
+{
+while [ -z $INPUT ]
+do
+    INPUT=$(whiptail --title "$TITLE" --backtitle "$BACKTITLE" \
+    --inputbox "$1" "$2" "$3" 3>&1 1>&2 2>&3)
+done
+}
+
+whiptail_password()
+{
+while [ -z $INPUT ]
+do
+    INPUT=$(whiptail --title "$TITLE" --backtitle "$BACKTITLE" \
+    --passwordbox "$1" "$2" "$3" 3>&1 1>&2 2>&3)
+done
+}
 
 # Get hostname to netbios
 NETBIOS=$(echo $(hostname) | tr '[:upper:]' '[:lower:]')
@@ -85,19 +110,19 @@ debconf-apt-progress -- apt -y install \
 systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &> /dev/null
 systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &> /dev/null
 
-# Capturamos variables provenientes de krb5-config
-REALM=$(cat /etc/krb5.conf | egrep default_realm | cut -d ' ' -f3)
-DOMAIN=$(echo $REALM | cut -d '.' -f1)
-
-REALM=$(echo ${REALM} | tr '[:upper:]' '[:lower:]')
-DOMAIN=$(echo ${DOMAIN} | tr '[:upper:]' '[:lower:]')
-
 # Now we'll copy the krb5.conf kerberos
 cp /etc/krb5.conf{,.orig}
 # Now we'll copy the smb.conf samba
 cp /etc/samba/smb.conf{,.orig}
 # Now we'll copy the nsswitch
 cp /etc/nsswitch.conf{,.orig}
+
+# GET KERBEROS INFO
+REALM=$(cat /etc/krb5.conf | egrep default_realm | cut -d ' ' -f3)
+DOMAIN=$(echo $REALM | cut -d '.' -f1)
+
+REALM=$(echo ${REALM} | tr '[:upper:]' '[:lower:]')
+DOMAIN=$(echo ${DOMAIN} | tr '[:upper:]' '[:lower:]')
 
 cat << EOF > /etc/samba/smb.conf
 # Global parameters
@@ -221,14 +246,13 @@ samba-tool domain provision \
     --domain="${DOMAIN^^}" \
     --adminpass="${ADMINPASS}" &> /tmp/$$.log &
 
+sleep 1
 newtcols_error=(
    window=,red
    border=white,red
    textbox=white,red
    button=black,white
 )
-
-sleep 1
 
 err=$(cat /tmp/$$.log | egrep 'ERROR:' | cut -d ':' -f1)
 if [ $err = "ERROR" ]
