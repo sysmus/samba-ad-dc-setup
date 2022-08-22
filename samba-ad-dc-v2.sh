@@ -35,8 +35,8 @@ IP=$(hostname -I)
 
 ###############
 # WHIPTAIL BASE
-TITLE="SAMBA AD DC INSTALLER by <sysmus@hotmail.com>"
-BACKTITLE="::: SAMBA COMO CONTROLADOR DE DOMINIO"
+TITLE="SAMBA AD DC - Active Directory - Installer"
+BACKTITLE="::: Script create by Oficinas CAYRO -- sysmus@hotmail.com"
 
 whiptail_message "lib/welcome.md" 22 96
 
