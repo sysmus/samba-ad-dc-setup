@@ -170,26 +170,27 @@ cat << EOF > /etc/samba/smb.conf
 # Global parameters
 [global]
     dns forwarder = ${DNS}
+    interfaces = 127.0.0.1 ${IP}
     netbios name = ${NETBIOS^^}
-	realm = ${REALM^^}
-	server role = active directory domain controller
+    realm = ${REALM^^}
+    server role = active directory domain controller
     server string = Samba4 AD DC Server
-	workgroup = ${DOMAIN^^}
-	idmap_ldb:use rfc2307 = yes
-	allow dns updates = nonsecure
-	ldap server require strong auth = no
+    workgroup = ${DOMAIN^^}
+    idmap_ldb:use rfc2307 = yes
+    allow dns updates = nonsecure
+    ldap server require strong auth = no
 
-	winbind use default domain = true
-	winbind offline logon = false
-	winbind nss info = rfc2307
-	password server = *
-;	winbind separator = +
-	winbind enum users = yes
-	winbind enum groups = yes
-	winbind uid = 10000-20000
-	winbind gid = 10000-20000
-	template homedir = /tmp
-	template shell = /bin/false
+    winbind use default domain = true
+    winbind offline logon = false
+    winbind nss info = rfc2307
+    password server = *
+;   winbind separator = +
+    winbind enum users = yes
+    winbind enum groups = yes
+    winbind uid = 10000-20000
+    winbind gid = 10000-20000
+    template homedir = /tmp
+    template shell = /bin/false
 
 #### Debugging/Accounting ####
 
@@ -224,9 +225,9 @@ cat << EOF > /etc/krb5.conf
 
 [realms]
     ${REALM^^} = {
-        kdc = ${DOMAIN^^}.${REALM^^}
-        master_kdc = ${DOMAIN^^}.${REALM^^}
-        admin_server = ${DOMAIN^^}.${REALM^^}
+        kdc = ${NETBIOS^^}.${REALM^^}
+        master_kdc = ${NETBIOS^^}.${REALM^^}
+        admin_server = ${NETBIOS^^}.${REALM^^}
         default_domain = ${REALM,,}
     }
 
@@ -257,7 +258,7 @@ cat << EOF > /etc/resolv.conf
 nameserver 127.0.0.1
 search ${REALM,,}
 domain ${REALM,,}
-nameserver ${IP}
+nameserver ${DNS}
 options timeout:1
 EOF
 
