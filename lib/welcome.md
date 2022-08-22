@@ -1,8 +1,6 @@
 ### SAMBA COMO CONTROLADOR DE DOMINIO ###
 
-Inicialmente samba está creado para realizar comunicación entre sistemas de red NFS y SMB
-y garantizar la compartición de ficheros por usuarios. Pero tiene la posibilidad de generar
-un Domain Controller al uso mediante configuraciones por defecto.
+Inicialmente samba está creado para realizar comunicación entre sistemas de red NFS y SMB y garantizar la compartición de ficheros por usuarios. Pero tiene la posibilidad de generar un Domain Controller al uso mediante configuraciones por defecto.
 
 Para ello se necesitaran de los siguientes paquetes:
 

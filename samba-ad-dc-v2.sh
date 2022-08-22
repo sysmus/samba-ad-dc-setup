@@ -213,8 +213,6 @@ unset INPUT
 whiptail_password "\nIngrese la contraseña para la nueva cuenta 'Administrator' del dominio de samba.\n\nRequisitos de la contraseña:\n - debe tener al menos 8 caracteres de longitud\n - debe contener caracteres de al menos 3 de las siguientes\n   categorias: mayúsculas, minúsculas, números y símbolos\n - tampoco debe contener estos caracteres: ['(',')']" 17 64
 ADMINPASS=$INPUT
 
-whiptail_message 'lib/provision.md' 14 72
-
 samba-tool domain provision \
     --use-rfc2307 \
     --server-role=dc \
@@ -222,6 +220,25 @@ samba-tool domain provision \
     --realm="${REALM^^}" \
     --domain="${DOMAIN^^}" \
     --adminpass="${ADMINPASS}" &> /tmp/$$.log &
+
+newtcols_error=(
+   window=,red
+   border=white,red
+   textbox=white,red
+   button=black,white
+)
+
+sleep 1
+
+err=$(cat /tmp/$$.log | egrep 'ERROR:' | cut -d ':' -f1)
+if [ $err = "ERROR" ]
+then
+	NEWT_COLORS="${newtcols[@]} ${newtcols_error[@]}" \
+    whiptail --msgbox "¡¡¡ERROR!!! ¡¡¡ADVERTENCIA!!! ¡¡¡QUE, CAGADA!!! ¡¡¡AFINA BIEN TUS DEDOS!!!\n\nLo sentimos, pero hemos detectado un grave error. La contraseña no cumple con los requisitos mínimos para ser aceptada, vuelve a ejecutar el script e inténtalo nuevamente." 12 78
+    exit 1
+fi
+
+whiptail_message 'lib/provision.md' 16 70
 
 i=0
 while [ $i -ne 1 ]
@@ -236,7 +253,7 @@ do
 } | whiptail \
     --backtitle "$BACKTITLE" \
     --title "$TITLE" \
-    --gauge "\nProvisioning a Samba Active Directory, Wait please.." 8 72 0
+    --gauge "\nAprovisionando un directorio activo de Samba, espere por favor.." 8 68 0
 done
 
 # And finally, we'll start the Samba AD DC service:
@@ -245,9 +262,9 @@ systemctl start samba-ad-dc
 echo -e "\n### SAMBA AC DC ESTA COMPLETAMENTE OPERATIVO ###\n" > /tmp/$$.log
 samba-tool domain level show >> /tmp/$$.log
 
-whiptail_message /tmp/$$.log 14 72
+whiptail_message /tmp/$$.log 14 52
 
-whiptail_message lib/success.md 12 72
+whiptail_message lib/success.md 12 58
 
 echo -e "$BCyan"
 cat << EOF
