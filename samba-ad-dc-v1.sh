@@ -22,13 +22,19 @@ set -e
 
 . lib/ansicolors.sh
 
+#-------------------------------------------------
 # Get hostname to netbios
+#-------------------------------------------------
 NETBIOS=$(echo $(hostname) | tr '[:upper:]' '[:lower:]')
 
+#-------------------------------------------------
 # Set DNS forwarder
+#-------------------------------------------------
 DNS=$(ip route show | grep default | awk {'print $3'})
 
+#-------------------------------------------------
 # Get IP address
+#-------------------------------------------------
 IP=$(hostname -I)
 
 clear
@@ -43,7 +49,9 @@ cat << EOF
  #############################################################
 EOF
 
+#-------------------------------------------------
 # Change the Default Shell
+#-------------------------------------------------
 #<< EOF
 # ----------------------------------------------------------------------------
 # /bin/sh is a symlink to /bin/dash, however we need /bin/bash, not /bin/dash.
@@ -53,22 +61,30 @@ EOF
 #echo "dash dash/sh boolean false" | debconf-set-selections
 #DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash 2> /dev/null
 
+#-------------------------------------------------
 # Set public DNS - it's temporary
+#-------------------------------------------------
 cat << EOF > /etc/resolv.conf
 nameserver	9.9.9.9
 nameserver	8.8.8.8
 EOF
 
+#-------------------------------------------------
 # Actualizamos el sistema
+#-------------------------------------------------
 echo -e "${Cyan} \n Actualizamos el sistema\n ${ColorOff}"
 apt update && apt -y dist-upgrade
 
+#-------------------------------------------------
 # Instalamos samba y todas sus dependencias
+#-------------------------------------------------
 echo -e "${Cyan} \n Instalamos samba y todas sus dependencias\n ${ColorOff}"
 DEBIAN_FRONTEND=noninteractive apt -y install \
     samba smbclient krb5-user winbind libpam-winbind libnss-winbind xattr sudo acl bc
 
+#-------------------------------------------------
 # Tweaks to samba services
+#-------------------------------------------------
 systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
 systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
 
@@ -83,7 +99,9 @@ cat << EOF
  #############################################################
 EOF
 
+#-------------------------------------------------
 # ADD A NEW FOREST
+#-------------------------------------------------
 echo -e "${Green}"
 cat << EOF
  --------------------------------------------------------
@@ -98,7 +116,9 @@ read REALM
 
 REALM=$(echo ${REALM} | tr '[:upper:]' '[:lower:]')
 
+#-------------------------------------------------
 # THE NETBIOS DOMAIN NAME
+#-------------------------------------------------
 echo -e "${Green}"
 cat << EOF
  ------------------------------------------------------------
@@ -113,7 +133,9 @@ read DOMAIN
 
 DOMAIN=$(echo ${DOMAIN} | tr '[:upper:]' '[:lower:]')
 
+#-------------------------------------------------
 # ADMINISTRATOR PASSWORD
+#-------------------------------------------------
 echo -e "${Green}"
 cat << EOF
  -----------------------------------------------------------------------------
@@ -159,12 +181,25 @@ ADMINPASS=$PASSWORD
 
 echo;echo
 
-# Now we'll copy the krb5.conf kerberos
-cp /etc/krb5.conf{,.orig}
-# Now we'll copy the smb.conf samba
-cp /etc/samba/smb.conf{,.orig}
-# Now we'll copy the nsswitch
-cp /etc/nsswitch.conf{,.orig}
+#-------------------------------------------------
+# Now we'll copy the krb5.conf
+#-------------------------------------------------
+if [ -f /etc/krb5.conf ]; then
+    cp /etc/krb5.conf{,.orig}
+fi
+#-------------------------------------------------
+# Now we'll copy the smb.conf
+#-------------------------------------------------
+if [ -f /etc/samba/smb.conf ]; then
+    cp /etc/samba/smb.conf{,.orig}
+fi
+#-------------------------------------------------
+# Now we'll copy the nsswitch.conf
+#-------------------------------------------------
+if [ -f /etc/nsswitch.conf ]
+then
+    cp /etc/nsswitch.conf{,.orig}
+fi
 
 cat << EOF > /etc/samba/smb.conf
 # Global parameters
@@ -253,7 +288,9 @@ rpc:            db files
 netgroup:       nis
 EOF
 
+#-------------------------------------------------
 # Converting to primary DNS
+#-------------------------------------------------
 cat << EOF > /etc/resolv.conf
 nameserver 127.0.0.1
 search ${REALM,,}
@@ -262,7 +299,9 @@ nameserver ${DNS}
 options timeout:1
 EOF
 
+#-------------------------------------------------
 # Next, we need to adjust the Debian default settings for the samba services.
+#-------------------------------------------------
 adjustSamba=(
     "systemctl stop smbd nmbd winbind"
     "systemctl disable smbd nmbd winbind"
@@ -286,14 +325,18 @@ samba-tool domain provision \
 
 echo
 
+#-------------------------------------------------
 # And finally, we'll start the Samba AD DC service:
+#-------------------------------------------------
 systemctl start samba-ad-dc
 
 samba-tool domain level show
 
 echo -e $BWhite; read -p ' Press [Enter] key to continue...'; echo -e $ColorOff
 
+#-------------------------------------------------
 # Look up the DC's AD DNS record:
+#-------------------------------------------------
 echo -e "${Cyan} Look up the DC's AD DNS record\n ${ColorOff}"
 host -t A ${REALM,,}
 host -t A ${NETBIOS,,}.${REALM,,}
@@ -308,10 +351,14 @@ klist
 
 samba-tool user setexpiry Administrator --noexpiry
 
+#-------------------------------------------------
 # List all shares provided by the DC:
+#-------------------------------------------------
 smbclient -L localhost -U%
 
+#-------------------------------------------------
 # To verify authentication, connect to the netlogon share:
+#-------------------------------------------------
 smbclient //localhost/netlogon -UAdministrator%"${ADMINPASS}" -c 'ls'
 
 cp -a /var/lib/samba/sysvol /home

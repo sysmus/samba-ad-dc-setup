@@ -22,7 +22,9 @@ set -e
 
 . lib/ansicolors.sh
 
+#-------------------------------------------------
 # DIALOG/WHIPTAIL
+#-------------------------------------------------
 whiptail_message()
 {
     whiptail \
@@ -49,13 +51,19 @@ do
 done
 }
 
+#-------------------------------------------------
 # Get hostname to netbios
+#-------------------------------------------------
 NETBIOS=$(echo $(hostname) | tr '[:upper:]' '[:lower:]')
 
+#-------------------------------------------------
 # Set DNS forwarder
+#-------------------------------------------------
 DNS=$(ip route show | grep default | awk {'print $3'})
 
+#-------------------------------------------------
 # Get IP address
+#-------------------------------------------------
 IP=$(hostname -I)
 
 ###############
@@ -65,7 +73,9 @@ BACKTITLE="::: Script create by Oficinas CAYRO -- sysmus@hotmail.com"
 
 whiptail_message "lib/welcome.md" 22 96
 
+#-------------------------------------------------
 # If you cannot understand this, read Bash_Shell_Scripting#if_statements again.
+#-------------------------------------------------
 if (whiptail \
     --backtitle "$BACKTITLE" \
     --title "$TITLE" --yes-button SI --no-button NO \
@@ -75,7 +85,9 @@ else
     exit 1
 fi
 
+#-------------------------------------------------
 # Change the Default Shell
+#-------------------------------------------------
 #<< EOF
 # ----------------------------------------------------------------------------
 # /bin/sh is a symlink to /bin/dash, however we need /bin/bash, not /bin/dash.
@@ -86,13 +98,17 @@ fi
 #DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash &>/dev/null
 #unset DEBIAN_FRONTEND
 
+#-------------------------------------------------
 # Set public DNS - it's temporary
+#-------------------------------------------------
 cat << EOF > /etc/resolv.conf
 nameserver	9.9.9.9
 nameserver	8.8.8.8
 EOF
 
+#-------------------------------------------------
 # UPDATE SYSTEM & SAMBA INSTALL
+#-------------------------------------------------
 debconf-apt-progress -- apt update
 debconf-apt-progress -- apt -y dist-upgrade
 debconf-apt-progress -- apt -y install \
@@ -106,25 +122,35 @@ debconf-apt-progress -- apt -y install \
     xattr \
     acl
 
+#-------------------------------------------------
 # Tweaks to samba services
+#-------------------------------------------------
 systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &> /dev/null
 systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &> /dev/null
 
+#-------------------------------------------------
 # Now we'll copy the krb5.conf
+#-------------------------------------------------
 if [ -f /etc/krb5.conf ]; then
     cp /etc/krb5.conf{,.orig}
 fi
+#-------------------------------------------------
 # Now we'll copy the smb.conf
+#-------------------------------------------------
 if [ -f /etc/samba/smb.conf ]; then
     cp /etc/samba/smb.conf{,.orig}
 fi
+#-------------------------------------------------
 # Now we'll copy the nsswitch.conf
+#-------------------------------------------------
 if [ -f /etc/nsswitch.conf ]
 then
     cp /etc/nsswitch.conf{,.orig}
 fi
 
+#-------------------------------------------------
 # GET KERBEROS INFO
+#-------------------------------------------------
 REALM=$(cat /etc/krb5.conf | egrep default_realm | cut -d ' ' -f3)
 DOMAIN=$(echo $REALM | cut -d '.' -f1)
 
@@ -218,7 +244,9 @@ rpc:            db files
 netgroup:       nis
 EOF
 
+#-------------------------------------------------
 # Converting to primary DNS
+#-------------------------------------------------
 cat << EOF > /etc/resolv.conf
 nameserver 127.0.0.1
 search ${REALM,,}
@@ -227,7 +255,9 @@ nameserver ${DNS}
 options timeout:1
 EOF
 
+#-------------------------------------------------
 # Next, we need to adjust the Debian default settings for the samba services.
+#-------------------------------------------------
 adjustSamba=(
     "systemctl stop smbd nmbd winbind"
     "systemctl disable smbd nmbd winbind"
@@ -287,7 +317,9 @@ do
     --gauge "\nAprovisionando un directorio activo de Samba, espere por favor.." 8 68 0
 done
 
+#-------------------------------------------------
 # And finally, we'll start the Samba AD DC service:
+#-------------------------------------------------
 systemctl start samba-ad-dc
 
 echo -e "\n### SAMBA AC DC ESTA COMPLETAMENTE OPERATIVO ###\n" > /tmp/$$.log
@@ -307,7 +339,9 @@ cat << EOF
 
 EOF
 
+#-------------------------------------------------
 # Look up the DC's AD DNS record:
+#-------------------------------------------------
 echo -e "${Cyan} Look up the DC's AD DNS record\n ${ColorOff}"
 host -t A ${REALM,,}
 host -t A ${NETBIOS,,}.${REALM,,}
@@ -322,10 +356,14 @@ klist
 
 samba-tool user setexpiry Administrator --noexpiry
 
+#-------------------------------------------------
 # List all shares provided by the DC:
+#-------------------------------------------------
 smbclient -L localhost -U%
 
+#-------------------------------------------------
 # To verify authentication, connect to the netlogon share:
+#-------------------------------------------------
 smbclient //localhost/netlogon -UAdministrator%"${ADMINPASS}" -c 'ls'
 
 cp -a /var/lib/samba/sysvol /home
