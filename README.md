@@ -9,7 +9,7 @@ sysmus/sysmus is a ✨ special ✨ repository because its `README.md` (this file
 You can click the Preview link to take a look at your changes.
 --->
 
-# SAMBA4 ACTIVE DIRECTORY DOMAIN CONTROLLER
+# SAMBA AD DC for Debian Based Systems
 
 ![SAMBA-AD-DC](img/samba-ad-dc-img1.png)
 ![SAMBA-AD-DC](img/samba-ad-dc-img2.png)
