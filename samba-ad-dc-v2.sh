@@ -120,7 +120,8 @@ debconf-apt-progress -- apt -y install \
     krb5-user \
     winbind \
     xattr \
-    acl
+    acl \
+    bc
 
 #-------------------------------------------------
 # Tweaks to samba services
@@ -259,8 +260,8 @@ EOF
 # Next, we need to adjust the Debian default settings for the samba services.
 #-------------------------------------------------
 adjustSamba=(
-    "systemctl stop smbd nmbd winbind"
-    "systemctl disable smbd nmbd winbind"
+    "systemctl stop smbd nmbd winbind systemd-resolved"
+    "systemctl disable smbd nmbd winbind systemd-resolved"
     "systemctl mask smbd nmbd winbind"
     "systemctl unmask samba-ad-dc"
     "systemctl enable samba-ad-dc"
