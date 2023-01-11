@@ -34,15 +34,14 @@ CM="${GN}✓${CL}"
 CROSS="${RD}✗${CL}"
 
 function header_info {
-    echo -e "${RD}"
-    cat <<"EOF"
+    echo -e "${RD}
    _____                 __             ____           __        ____
   / ___/____ _____ ___  / /_  ____ _   /  _/___  _____/ /_____ _/ / /
-  \__ \/ __ `/ __ `__ \/ __ \/ __ `/   / // __ \/ ___/ __/ __ `/ / / 
- ___/ / /_/ / / / / / / /_/ / /_/ /  _/ // / / (__  ) /_/ /_/ / / /  
-/____/\__,_/_/ /_/ /_/_.___/\__,_/  /___/_/ /_/____/\__/\__,_/_/_/   
-EOF
-echo -e "${CL}"
+  \__ \/ __ '/ __ '__ \/ __ \/ __ '/   / // __ \/ ___/ __/ __ '/ / /
+ ___/ / /_/ / / / / / / /_/ / /_/ /  _/ // / / (__  ) /_/ /_/ / / /
+/____/\__,_/_/ /_/ /_/_.___/\__,_/  /___/_/ /_/____/\__/\__,_/_/_/ v4
+
+${CL}"
 }
 
 clear
@@ -153,9 +152,9 @@ REALM=$(echo ${REALM} | tr '[:upper:]' '[:lower:]')
 # THE NETBIOS DOMAIN NAME
 #-------------------------------------------------
 echo -e "${GN}
- ------------------------------------------------------------
- EL DOMINIO NETBIOS -- TAMBIEN CONOCIDO COMO GRUPO DE TRABAJO
- ------------------------------------------------------------
+ ---------------------------------------------------------
+ DOMINIO NETBIOS -- TAMBIEN CONOCIDO COMO GRUPO DE TRABAJO
+ ---------------------------------------------------------
 ${GN}"
 
 printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Nombre del grupo de trabajo: " "$(tput sgr0)"
@@ -167,9 +166,11 @@ DOMAIN=$(echo ${DOMAIN} | tr '[:upper:]' '[:lower:]')
 # ADMINISTRATOR PASSWORD
 #-------------------------------------------------
 echo -e "${GN}
- ---------------------------------------------------------------------
- CONTRASEÑA DE ADMINISTRADOR -- DEBE CUMPLIR REQUISITOS DE COMPLEJIDAD
- ---------------------------------------------------------------------
+ --------------------------------------------------------------
+ La cuenta administrador de samba por defecto es: Administrator
+ Ingrese una contraseña compleja con mas de 7 caracteres.
+ Por favor utilice letras, números y simbolos.
+ ---------------------------------------------
 ${GN}"
 
 printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Contraseña de administrador: " "$(tput sgr0)"
@@ -205,6 +206,8 @@ done
 stty echo
 
 ADMINPASS=$PASSWORD
+
+echo; echo
 
 #-------------------------------------------------
 # Now we'll copy the krb5.conf
@@ -335,14 +338,8 @@ adjustSamba=(
     "systemctl enable samba-ad-dc"
 )
 
-for ((i=0;i<=5;++i))
-do
-    eval "${adjustSamba[$i]:-}" &>/dev/null
-done
-
-echo; echo
-
 msg_info "Active Directory Provisioning"
+
 samba-tool domain provision \
     --use-rfc2307 \
     --server-role=dc \
@@ -350,7 +347,12 @@ samba-tool domain provision \
     --realm="${REALM^^}" \
     --domain="${DOMAIN^^}" \
     --adminpass="${ADMINPASS}" &>/dev/null
-    sleep 10s
+
+for ((i=0;i<=5;++i))
+do
+    eval "${adjustSamba[$i]:-}" &>/dev/null
+done
+
 msg_ok "Completed Successfully!"
 
 #-------------------------------------------------
