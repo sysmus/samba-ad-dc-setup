@@ -143,7 +143,7 @@ echo -e "${GN}
  --------------------------------------------------------
 ${CL}"
 
-printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Nombre de dominio raíz: " "$(tput sgr0)"
+printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Nombre de Dominio Raiz: " "$(tput sgr0)"
 read REALM
 
 REALM=$(echo ${REALM} | tr '[:upper:]' '[:lower:]')
@@ -157,7 +157,7 @@ echo -e "${GN}
  ---------------------------------------------------------
 ${GN}"
 
-printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Nombre del grupo de trabajo: " "$(tput sgr0)"
+printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Nombre del Grupo de Trabajo: " "$(tput sgr0)"
 read DOMAIN
 
 DOMAIN=$(echo ${DOMAIN} | tr '[:upper:]' '[:lower:]')
@@ -173,7 +173,7 @@ echo -e "${GN}
  ---------------------------------------------
 ${GN}"
 
-printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Contraseña de administrador: " "$(tput sgr0)"
+printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Contraseña de Administrador: " "$(tput sgr0)"
 
 unset PASSWORD
 unset CHARCOUNT
