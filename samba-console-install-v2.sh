@@ -35,11 +35,11 @@ CROSS="${RD}✗${CL}"
 
 function header_info {
     echo -e "${RD}
-   _____                 __             ____           __        ____
-  / ___/____ _____ ___  / /_  ____ _   /  _/___  _____/ /_____ _/ / /
-  \__ \/ __ '/ __ '__ \/ __ \/ __ '/   / // __ \/ ___/ __/ __ '/ / /
- ___/ / /_/ / / / / / / /_/ / /_/ /  _/ // / / (__  ) /_/ /_/ / / /
-/____/\__,_/_/ /_/ /_/_.___/\__,_/  /___/_/ /_/____/\__/\__,_/_/_/
+    _____                 __             ____           __        ____
+   / ___/____ _____ ___  / /_  ____ _   /  _/___  _____/ /_____ _/ / /
+   \__ \/ __ '/ __ '__ \/ __ \/ __ '/   / // __ \/ ___/ __/ __ '/ / /
+  ___/ / /_/ / / / / / / /_/ / /_/ /  _/ // / / (__  ) /_/ /_/ / / /
+ /____/\__,_/_/ /_/ /_/_.___/\__,_/  /___/_/ /_/____/\__/\__,_/_/_/
 
 ${CL}"
 }
@@ -48,11 +48,11 @@ clear
 header_info
 
 while true; do
-    read -p "Start the Samba Install Script (y/n)? " yn
+    read -p " Start the Samba Install Script (y/n)? " yn
     case $yn in
     [Yy]*) break ;;
     [Nn]*) exit ;;
-    *) echo "Please answer yes or no." ;;
+    *) echo " Please answer yes or no." ;;
     esac
 done
 
@@ -139,7 +139,9 @@ ${CL}"
 #-------------------------------------------------
 echo -e "${BL}
  --------------------------------------------------------
- AGREGAR NUEVO BOSQUE -- Especifique su nombre de dominio
+ AGREGAR NUEVO BOSQUE
+ --------------------------------------------------------
+ Especifique su nombre de dominio en mayúsculas
  --------------------------------------------------------
 ${CL}"
 
@@ -153,7 +155,9 @@ REALM=$(echo ${REALM} | tr '[:upper:]' '[:lower:]')
 #-------------------------------------------------
 echo -e "${BL}
  --------------------------------------------------------
- DOMINIO NETBIOS - Tambien conocido como grupo de trabajo
+ AGREGAR DOMINIO NETBIOS
+ --------------------------------------------------------
+ Especifique su grupo de trabajo en mayúsculas
  --------------------------------------------------------
 ${CL}"
 
@@ -340,6 +344,11 @@ adjustSamba=(
 
 msg_info "Active Directory Provisioning"
 
+for ((i=0;i<=5;++i))
+do
+    eval "${adjustSamba[$i]:-}" &>/dev/null
+done
+
 samba-tool domain provision \
     --use-rfc2307 \
     --server-role=dc \
@@ -348,11 +357,7 @@ samba-tool domain provision \
     --domain="${DOMAIN^^}" \
     --adminpass="${ADMINPASS}" &>/dev/null
 
-for ((i=0;i<=5;++i))
-do
-    eval "${adjustSamba[$i]:-}" &>/dev/null
-done
-
+sleep 10
 msg_ok "Completed Successfully!\n"
 
 #-------------------------------------------------
