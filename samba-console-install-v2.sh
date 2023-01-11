@@ -128,22 +128,22 @@ sleep 2s
 
 clear
 header_info
-echo -e "${BL}
- #####################################################
- ###    APROVISIONAMIENTO DEL DIRECTORIO ACTIVO    ###
- ###       DEBE PROPORCIONAR DATOS CORRECTOS       ###
- #####################################################
+echo -e "${YW}
+ ########################################################
+ ###      APROVISIONAMIENTO DE DIRECTORIO ACTIVO      ###
+ ###        DEBES PROPORCIONAR DATOS CORRECTOS        ###
+ ########################################################
 ${CL}"
 #-------------------------------------------------
 # ADD A NEW FOREST
 #-------------------------------------------------
-echo -e "${GN}
+echo -e "${BL}
  --------------------------------------------------------
  AGREGAR NUEVO BOSQUE -- ESPECIFIQUE SU NOMBRE DE DOMINIO
  --------------------------------------------------------
 ${CL}"
 
-printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Nombre de Dominio Raiz: " "$(tput sgr0)"
+printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " DOMAIN: " "$(tput sgr0)"
 read REALM
 
 REALM=$(echo ${REALM} | tr '[:upper:]' '[:lower:]')
@@ -151,13 +151,13 @@ REALM=$(echo ${REALM} | tr '[:upper:]' '[:lower:]')
 #-------------------------------------------------
 # THE NETBIOS DOMAIN NAME
 #-------------------------------------------------
-echo -e "${GN}
- ---------------------------------------------------------
- DOMINIO NETBIOS -- TAMBIEN CONOCIDO COMO GRUPO DE TRABAJO
- ---------------------------------------------------------
-${GN}"
+echo -e "${BL}
+ --------------------------------------------------------
+ DOMINIO NETBIOS - TAMBIEN CONOCIDO COMO GRUPO DE TRABAJO
+ --------------------------------------------------------
+${CL}"
 
-printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Nombre del Grupo de Trabajo: " "$(tput sgr0)"
+printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " WORKGROUP: " "$(tput sgr0)"
 read DOMAIN
 
 DOMAIN=$(echo ${DOMAIN} | tr '[:upper:]' '[:lower:]')
@@ -165,15 +165,15 @@ DOMAIN=$(echo ${DOMAIN} | tr '[:upper:]' '[:lower:]')
 #-------------------------------------------------
 # ADMINISTRATOR PASSWORD
 #-------------------------------------------------
-echo -e "${GN}
- --------------------------------------------------------------
- La cuenta administrador de samba por defecto es: Administrator
- Ingrese una contraseña compleja con mas de 7 caracteres.
+echo -e "${BL}
+ --------------------------------------------------------
+ La cuenta de administrador por defecto es: ${GN}Administrator${CL}
+ ${BL}Ingrese una contraseña compleja con mas de 7 caracteres.
  Por favor utilice letras, números y simbolos.
- ---------------------------------------------
-${GN}"
+ --------------------------------------------------------
+${CL}"
 
-printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Contraseña de Administrador: " "$(tput sgr0)"
+printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " PASSWORD: " "$(tput sgr0)"
 
 unset PASSWORD
 unset CHARCOUNT
