@@ -68,7 +68,7 @@ IP=$(hostname -I)
 
 ###############
 # WHIPTAIL BASE
-TITLE="SAMBA AD DC - Active Directory - Installer"
+TITLE="SAMBA AD DC - Active Directory - Install"
 BACKTITLE="::: Script create by Oficinas CAYRO -- sysmus@hotmail.com"
 
 whiptail_message "lib/welcome.md" 22 96
