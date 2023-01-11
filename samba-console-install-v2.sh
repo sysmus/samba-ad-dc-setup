@@ -39,7 +39,7 @@ function header_info {
   / ___/____ _____ ___  / /_  ____ _   /  _/___  _____/ /_____ _/ / /
   \__ \/ __ '/ __ '__ \/ __ \/ __ '/   / // __ \/ ___/ __/ __ '/ / /
  ___/ / /_/ / / / / / / /_/ / /_/ /  _/ // / / (__  ) /_/ /_/ / / /
-/____/\__,_/_/ /_/ /_/_.___/\__,_/  /___/_/ /_/____/\__/\__,_/_/_/ v4
+/____/\__,_/_/ /_/ /_/_.___/\__,_/  /___/_/ /_/____/\__/\__,_/_/_/
 
 ${CL}"
 }
@@ -65,7 +65,7 @@ function msg_info() {
 
 function msg_ok() {
     local msg="$1"
-    echo -e "${BFR} ${CM} ${GN}${msg}${CL}\n"
+    echo -e "${BFR} ${CM} ${GN}${msg}${CL}"
 }
 
 #-------------------------------------------------
@@ -109,7 +109,7 @@ EOF
 msg_info "Update & Full Upgrade System"
 apt update &>/dev/null
 apt -y dist-upgrade &>/dev/null
-msg_ok "Completed Successfully!"
+msg_ok "Completed Successfully!\n"
 
 #-------------------------------------------------
 # Instalamos samba y todas sus dependencias
@@ -123,7 +123,7 @@ DEBIAN_FRONTEND=noninteractive apt -y install \
 #-------------------------------------------------
 systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
 systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
-msg_ok "Completed Successfully!"
+msg_ok "Completed Successfully!\n"
 sleep 2s
 
 clear
@@ -139,7 +139,7 @@ ${CL}"
 #-------------------------------------------------
 echo -e "${BL}
  --------------------------------------------------------
- AGREGAR NUEVO BOSQUE -- ESPECIFIQUE SU NOMBRE DE DOMINIO
+ AGREGAR NUEVO BOSQUE -- Especifique su nombre de dominio
  --------------------------------------------------------
 ${CL}"
 
@@ -153,7 +153,7 @@ REALM=$(echo ${REALM} | tr '[:upper:]' '[:lower:]')
 #-------------------------------------------------
 echo -e "${BL}
  --------------------------------------------------------
- DOMINIO NETBIOS - TAMBIEN CONOCIDO COMO GRUPO DE TRABAJO
+ DOMINIO NETBIOS - Tambien conocido como grupo de trabajo
  --------------------------------------------------------
 ${CL}"
 
@@ -353,7 +353,7 @@ do
     eval "${adjustSamba[$i]:-}" &>/dev/null
 done
 
-msg_ok "Completed Successfully!"
+msg_ok "Completed Successfully!\n"
 
 #-------------------------------------------------
 # And finally, we'll start the Samba AD DC service:
