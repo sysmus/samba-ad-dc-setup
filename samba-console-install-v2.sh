@@ -22,6 +22,7 @@ set -euo pipefail
 shopt -s inherit_errexit nullglob
 YW=$(echo "\033[33m")
 BL=$(echo "\033[36m")
+BBL=$(echo "\033[1;36m")
 MG=$(echo "\033[35m")
 RD=$(echo "\033[01;31m")
 BGN=$(echo "\033[4;92m")
@@ -141,7 +142,7 @@ echo -e "${BL}
  --------------------------------------------------------
  AGREGAR NUEVO BOSQUE
  --------------------------------------------------------
- Especifique su nombre de dominio en mayúsculas
+ ${BBL}Especifique su nombre de dominio en mayúsculas${CL}${BL}
  --------------------------------------------------------
 ${CL}"
 
@@ -157,7 +158,7 @@ echo -e "${BL}
  --------------------------------------------------------
  AGREGAR DOMINIO NETBIOS
  --------------------------------------------------------
- Especifique su grupo de trabajo en mayúsculas
+ ${BBL}Especifique su grupo de trabajo en mayúsculas${CL}${BL}
  --------------------------------------------------------
 ${CL}"
 
@@ -173,7 +174,7 @@ echo -e "${BL}
  --------------------------------------------------------
  La cuenta de administrador por defecto es: ${GN}Administrator${CL}
  ${BL}Ingrese una contraseña compleja con mas de 7 caracteres.
- Por favor utilice letras, números y simbolos.
+ ${BBL}Por favor utilice letras, números y simbolos.${CL}${BL}
  --------------------------------------------------------
 ${CL}"
 
