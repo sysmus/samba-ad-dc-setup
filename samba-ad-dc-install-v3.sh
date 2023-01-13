@@ -18,9 +18,41 @@
 # Active Directory basando en Samba4. (Debian Based Systems)
 # ---------------------------------------------------------------------------------------
 
-set -e
+set -e pipefail
+shopt -s inherit_errexit nullglob
+source lib/ansicolors.sh
 
-. lib/ansicolors.sh
+function header_info() {
+echo -e "${BRed}
+    _______________________________________________________
+         __                                  __     _____
+        /    )                /               / |    /    )
+    ----\--------__---_--_---/__----__-------/__|---/----/-
+         \     /   ) / /  ) /   ) /   ) v3  /   |  /    /
+    _(____/___(___(_/_/__/_(___/_(___(_____/____|_/____/___
+${ColorOff}"
+}
+
+clear
+header_info
+
+echo -e "${Cyan}
+ #############################################################
+ ###                                                       ###
+ ### INSTALACION AUTOMATIZADA DE UN CONTROLADOR DE DOMINIO ###
+ ###  ACTIVE DIRECTORY BASADO EN SAMBA SOBRE DEBIAN LINUX  ###
+ ###                                                       ###
+ #############################################################
+${ColorOff}"
+
+while true; do
+    read -p " All ready to install Samba Server, Proceed(y/n)? " yn
+    case $yn in
+    [Yy]*) break ;;
+    [Nn]*) exit ;;
+    *) echo -e "${Red}Please answer y/n${ColorOff}" ;;
+    esac
+done
 
 #-------------------------------------------------
 # DIALOG/WHIPTAIL
@@ -332,7 +364,7 @@ whiptail_message lib/success.md 12 58
 
 echo -e "$BCyan"
 cat << EOF
-        ---oOO-- (_) ----oOO---
+     ----oOO---- (_) ----oOO----
  ╔═══════════════════════════════════╗
  ║ REALIZAMOS COMPROBACIONES FINALES ║
  ╚═══════════════════════════════════╝

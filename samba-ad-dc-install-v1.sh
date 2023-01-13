@@ -20,54 +20,39 @@
 
 set -euo pipefail
 shopt -s inherit_errexit nullglob
-YW=$(echo "\033[33m")
-BL=$(echo "\033[36m")
-BBL=$(echo "\033[1;36m")
-MG=$(echo "\033[35m")
-RD=$(echo "\033[01;31m")
-BGN=$(echo "\033[4;92m")
-GN=$(echo "\033[1;92m")
-DGN=$(echo "\033[32m")
-CL=$(echo "\033[m")
-BFR="\\r\\033[K"
-HOLD="-"
-CM="${GN}✓${CL}"
-CROSS="${RD}✗${CL}"
+source lib/ansicolors.sh
 
-function header_info {
-    echo -e "${RD}
-    _____                 __             ____           __        ____
-   / ___/____ _____ ___  / /_  ____ _   /  _/___  _____/ /_____ _/ / /
-   \__ \/ __ '/ __ '__ \/ __ \/ __ '/   / // __ \/ ___/ __/ __ '/ / /
-  ___/ / /_/ / / / / / / /_/ / /_/ /  _/ // / / (__  ) /_/ /_/ / / /
- /____/\__,_/_/ /_/ /_/_.___/\__,_/  /___/_/ /_/____/\__/\__,_/_/_/
-
-${CL}"
+function header_info() {
+echo -e "${BRed}
+    _______________________________________________________
+         __                                  __     _____
+        /    )                /               / |    /    )
+    ----\--------__---_--_---/__----__-------/__|---/----/-
+         \     /   ) / /  ) /   ) /   ) v1  /   |  /    /
+    _(____/___(___(_/_/__/_(___/_(___(_____/____|_/____/___
+${ColorOff}"
 }
 
 clear
 header_info
 
+echo -e "${Cyan}
+ #############################################################
+ ###                                                       ###
+ ### INSTALACION AUTOMATIZADA DE UN CONTROLADOR DE DOMINIO ###
+ ###  ACTIVE DIRECTORY BASADO EN SAMBA SOBRE DEBIAN LINUX  ###
+ ###                                                       ###
+ #############################################################
+${ColorOff}"
+
 while true; do
-    read -p " Start the Samba Install Script (y/n)? " yn
+    read -p " All ready to install Samba Server, Proceed(y/n)? " yn
     case $yn in
     [Yy]*) break ;;
     [Nn]*) exit ;;
-    *) echo " Please answer yes or no." ;;
+    *) echo -e "${Red}Please answer y/n${ColorOff}" ;;
     esac
 done
-
-echo
-
-function msg_info() {
-    local msg="$1"
-    echo -ne " ${HOLD} ${YW}${msg}...\n"
-}
-
-function msg_ok() {
-    local msg="$1"
-    echo -e "${BFR} ${CM} ${GN}${msg}${CL}"
-}
 
 #-------------------------------------------------
 # Get hostname to netbios
@@ -107,44 +92,41 @@ EOF
 #-------------------------------------------------
 # Actualizamos el sistema
 #-------------------------------------------------
-msg_info "Update & Full Upgrade System"
-apt update &>/dev/null
-apt -y dist-upgrade &>/dev/null
-msg_ok "Completed Successfully!\n"
+echo -e "${Cyan} \n Upgrading the Operating System\n ${ColorOff}"
+apt update && apt -y dist-upgrade
 
 #-------------------------------------------------
 # Instalamos samba y todas sus dependencias
 #-------------------------------------------------
-msg_info "Installing Samba & dependencies"
+echo -e "${Cyan} \n Installing samba and its dependencies\n ${ColorOff}"
 DEBIAN_FRONTEND=noninteractive apt -y install \
-    samba smbclient krb5-user winbind libpam-winbind \
-    libnss-winbind xattr sudo acl bc &>/dev/null
+    samba smbclient krb5-user winbind libpam-winbind libnss-winbind xattr sudo acl bc
+
 #-------------------------------------------------
 # Tweaks to samba services
 #-------------------------------------------------
 systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
 systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
-msg_ok "Completed Successfully!\n"
-sleep 2s
 
 clear
 header_info
-echo -e "${YW}
- ########################################################
- ###      APROVISIONAMIENTO DE DIRECTORIO ACTIVO      ###
- ###        DEBES PROPORCIONAR DATOS CORRECTOS        ###
- ########################################################
-${CL}"
+echo -e "${Cyan}
+ #############################################################
+ ###    APROVISIONAMIENTO DE DIRECTORIO ACTIVO DE SAMBA    ###
+ ###           DEBE PROPORCIONAR DATOS CORRECTOS           ###
+ #############################################################
+${ColorOff}"
+
 #-------------------------------------------------
 # ADD A NEW FOREST
 #-------------------------------------------------
-echo -e "${BL}
+echo -e "${Cyan}
  --------------------------------------------------------
  AGREGAR NUEVO BOSQUE
  --------------------------------------------------------
- ${BBL}Especifique su nombre de dominio en mayúsculas${CL}${BL}
+ ${BGreen}Especifique su nombre de dominio en mayúsculas${ColorOff}${Cyan}
  --------------------------------------------------------
-${CL}"
+${ColorOff}"
 
 printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " DOMAIN: " "$(tput sgr0)"
 read REALM
@@ -154,13 +136,13 @@ REALM=$(echo ${REALM} | tr '[:upper:]' '[:lower:]')
 #-------------------------------------------------
 # THE NETBIOS DOMAIN NAME
 #-------------------------------------------------
-echo -e "${BL}
+echo -e "${Cyan}
  --------------------------------------------------------
  AGREGAR DOMINIO NETBIOS
  --------------------------------------------------------
- ${BBL}Especifique su grupo de trabajo en mayúsculas${CL}${BL}
+ ${BGreen}Especifique su grupo de trabajo en mayúsculas${ColorOff}${Cyan}
  --------------------------------------------------------
-${CL}"
+${ColorOff}"
 
 printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " WORKGROUP: " "$(tput sgr0)"
 read DOMAIN
@@ -170,13 +152,13 @@ DOMAIN=$(echo ${DOMAIN} | tr '[:upper:]' '[:lower:]')
 #-------------------------------------------------
 # ADMINISTRATOR PASSWORD
 #-------------------------------------------------
-echo -e "${BL}
+echo -e "${Cyan}
  --------------------------------------------------------
- La cuenta de administrador por defecto es: ${GN}Administrator${CL}
- ${BL}Ingrese una contraseña compleja con mas de 7 caracteres.
- ${BBL}Por favor utilice letras, números y simbolos.${CL}${BL}
+ La cuenta de administrador por defecto es: ${BGreen}Administrator${ColorOff}
+ ${Cyan}Ingrese una contraseña compleja con mas de 7 caracteres.
+ ${BGreen}Por favor utilice letras, números y simbolos.${ColorOff}${Cyan}
  --------------------------------------------------------
-${CL}"
+${ColorOff}"
 
 printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " PASSWORD: " "$(tput sgr0)"
 
@@ -211,8 +193,6 @@ done
 stty echo
 
 ADMINPASS=$PASSWORD
-
-echo; echo
 
 #-------------------------------------------------
 # Now we'll copy the krb5.conf
@@ -343,12 +323,10 @@ adjustSamba=(
     "systemctl enable samba-ad-dc"
 )
 
-msg_info "Active Directory Provisioning"
-
-for ((i=0;i<=5;++i))
-do
-    eval "${adjustSamba[$i]:-}" &>/dev/null
-done
+#-------------------------------------------------
+# Iniciando aprovisionamiento Active Directory
+#-------------------------------------------------
+echo -e "${Cyan} \n\n Starting Active Directory Provisioning\n ${ColorOff}"
 
 samba-tool domain provision \
     --use-rfc2307 \
@@ -356,30 +334,33 @@ samba-tool domain provision \
     --dns-backend=SAMBA_INTERNAL \
     --realm="${REALM^^}" \
     --domain="${DOMAIN^^}" \
-    --adminpass="${ADMINPASS}" &>/dev/null
+    --adminpass="${ADMINPASS}"
 
-sleep 10
-msg_ok "Completed Successfully!\n"
+for ((i=0;i<=5;++i))
+do
+    eval "${adjustSamba[$i]:-}" &>/dev/null
+done
 
+echo
 #-------------------------------------------------
 # And finally, we'll start the Samba AD DC service:
 #-------------------------------------------------
 systemctl start samba-ad-dc
 samba-tool domain level show
 
-echo -e "${YW}"; read -p " Press [Enter] key to continue..."; echo -e "${CL}"
+echo -e "${Yellow}"; read -p " Press [Enter] key to continue..."; echo -e "${ColorOff}"
 
 #-------------------------------------------------
 # Look up the DC's AD DNS record:
 #-------------------------------------------------
-echo -e "${BL} Look up the DC's AD DNS record\n ${CL}"
+echo -e "${Cyan} Look up the DC's AD DNS record\n ${ColorOff}"
 host -t A ${REALM,,}
 host -t A ${NETBIOS,,}.${REALM,,}
 host -t SRV _ldap._tcp.${REALM,,}
 host -t SRV _kerberos._tcp.${REALM,,}
 host -t SRV _kerberos._udp.${REALM,,}
 
-echo -e "${YW}"; read -p " Press [Enter] key to continue..."; echo -e "${CL}"
+echo -e "${Yellow}"; read -p " Press [Enter] key to continue..."; echo -e "${ColorOff}"
 
 echo ${ADMINPASS} | kinit Administrator
 klist
@@ -400,7 +381,7 @@ cp -a /var/lib/samba/sysvol /home
 setfacl -m g:users:rwx /home/sysvol
 setfacl -m g:users:rwx /var/lib/samba/sysvol/"${REALM,,}"/scripts
 
-echo -e "${MG} \n Congratulations! everything has been installed.\n"
+echo -e "${Purple} \n Congratulations! everything has been installed.\n"
 #---
 echo "                                                                 _____      ";
 echo "                                                                /    /      ";
@@ -418,4 +399,5 @@ echo "            \`--'  \`\"                           \`--'  \`\"           /_
 #---
 echo
 echo " Powered by GNU/Linux Debian Rules :) Enjoy It's!"
-echo -e "${CL}"
+echo -e "${ColorOff}"
+

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------------------
 # Autor: Oficinas CAYRO -- sysmus@hotmail.com
-# Fecha: Diciembre 2015
+# Fecha: Abril 2016
 # ---------------------------------------------------------------------------------------
 # DESCRIPCIÓN:
 # Samba es un software gratuito de código abierto que proporciona una interoperabilidad
@@ -18,9 +18,58 @@
 # Active Directory basando en Samba4. (Debian Based Systems)
 # ---------------------------------------------------------------------------------------
 
-set -e
+set -euo pipefail
+shopt -s inherit_errexit nullglob
+source lib/ansicolors.sh
 
-. lib/ansicolors.sh
+function header_info() {
+echo -e "${BRed}
+    _______________________________________________________
+         __                                  __     _____
+        /    )                /               / |    /    )
+    ----\--------__---_--_---/__----__-------/__|---/----/-
+         \     /   ) / /  ) /   ) /   ) v2  /   |  /    /
+    _(____/___(___(_/_/__/_(___/_(___(_____/____|_/____/___
+${ColorOff}"
+}
+
+clear
+header_info
+
+echo -e "${Cyan}
+ #############################################################
+ ###                                                       ###
+ ### INSTALACION AUTOMATIZADA DE UN CONTROLADOR DE DOMINIO ###
+ ###  ACTIVE DIRECTORY BASADO EN SAMBA SOBRE DEBIAN LINUX  ###
+ ###                                                       ###
+ #############################################################
+${ColorOff}"
+
+while true; do
+    read -p " All ready to install Samba Server, Proceed(y/n)? " yn
+    case $yn in
+    [Yy]*) break ;;
+    [Nn]*) exit ;;
+    *) echo -e "${Red}Please answer y/n${ColorOff}" ;;
+    esac
+done
+
+BFR="\\r\\033[K"
+HOLD="-"
+CM="${Green}✓${ColorOff}"
+CROSS="${Red}✗${ColorOff}"
+
+function msg_info() {
+    local msg="$1"
+    echo -ne " ${HOLD} ${Yellow}${msg}...\n"
+}
+
+function msg_ok() {
+    local msg="$1"
+    echo -e "${BFR} ${CM} ${Green}${msg}${ColorOff}"
+}
+
+echo
 
 #-------------------------------------------------
 # Get hostname to netbios
@@ -36,18 +85,6 @@ DNS=$(ip route show | grep default | awk {'print $3'})
 # Get IP address
 #-------------------------------------------------
 IP=$(hostname -I)
-
-clear
-
-echo -e "${Yellow}"
-cat << EOF
- #############################################################
- ###                                                       ###
- ### INSTALACION AUTOMATIZADA DE UN CONTROLADOR DE DOMINIO ###
- ###           ACTIVE DIRECTORY BASADO EN SAMBA4           ###
- ###                                                       ###
- #############################################################
-EOF
 
 #-------------------------------------------------
 # Change the Default Shell
@@ -72,46 +109,47 @@ EOF
 #-------------------------------------------------
 # Actualizamos el sistema
 #-------------------------------------------------
-echo -e "${Cyan} \n Actualizamos el sistema\n ${ColorOff}"
-apt update && apt -y dist-upgrade
+msg_info "Upgrading the Operating System"
+apt update &>/dev/null
+apt -y dist-upgrade &>/dev/null
+msg_ok "Completed Successfully!\n"
 
 #-------------------------------------------------
 # Instalamos samba y todas sus dependencias
 #-------------------------------------------------
-echo -e "${Cyan} \n Instalamos samba y todas sus dependencias\n ${ColorOff}"
+msg_info "Installing samba and its dependencies"
 DEBIAN_FRONTEND=noninteractive apt -y install \
-    samba smbclient krb5-user winbind libpam-winbind libnss-winbind xattr sudo acl bc
-
+    samba smbclient krb5-user winbind libpam-winbind \
+    libnss-winbind xattr sudo acl bc &>/dev/null
 #-------------------------------------------------
 # Tweaks to samba services
 #-------------------------------------------------
 systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
 systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
+msg_ok "Completed Successfully!\n"
+sleep 2s
 
 clear
-echo -e "${Yellow}"
-cat << EOF
+header_info
+echo -e "${Cyan}
  #############################################################
- ###                                                       ###
  ###    APROVISIONAMIENTO DE DIRECTORIO ACTIVO DE SAMBA    ###
  ###           DEBE PROPORCIONAR DATOS CORRECTOS           ###
- ###                                                       ###
  #############################################################
-EOF
+${ColorOff}"
 
 #-------------------------------------------------
 # ADD A NEW FOREST
 #-------------------------------------------------
-echo -e "${Green}"
-cat << EOF
+echo -e "${Cyan}
  --------------------------------------------------------
-
- AGREGAR NUEVO BOSQUE -- ESPECIFIQUE SU NOMBRE DE DOMINIO
-
+ AGREGAR NUEVO BOSQUE
  --------------------------------------------------------
-EOF
-echo
-printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Nombre de dominio raíz: " "$(tput sgr0)"
+ ${BGreen}Especifique su nombre de dominio en mayúsculas${ColorOff}${Cyan}
+ --------------------------------------------------------
+${ColorOff}"
+
+printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " DOMAIN: " "$(tput sgr0)"
 read REALM
 
 REALM=$(echo ${REALM} | tr '[:upper:]' '[:lower:]')
@@ -119,16 +157,15 @@ REALM=$(echo ${REALM} | tr '[:upper:]' '[:lower:]')
 #-------------------------------------------------
 # THE NETBIOS DOMAIN NAME
 #-------------------------------------------------
-echo -e "${Green}"
-cat << EOF
- ------------------------------------------------------------
+echo -e "${Cyan}
+ --------------------------------------------------------
+ AGREGAR DOMINIO NETBIOS
+ --------------------------------------------------------
+ ${BGreen}Especifique su grupo de trabajo en mayúsculas${ColorOff}${Cyan}
+ --------------------------------------------------------
+${ColorOff}"
 
- EL DOMINIO NETBIOS -- TAMBIEN CONOCIDO COMO GRUPO DE TRABAJO
-
- ------------------------------------------------------------
-EOF
-echo
-printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Nombre del grupo de trabajo: " "$(tput sgr0)"
+printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " WORKGROUP: " "$(tput sgr0)"
 read DOMAIN
 
 DOMAIN=$(echo ${DOMAIN} | tr '[:upper:]' '[:lower:]')
@@ -136,16 +173,15 @@ DOMAIN=$(echo ${DOMAIN} | tr '[:upper:]' '[:lower:]')
 #-------------------------------------------------
 # ADMINISTRATOR PASSWORD
 #-------------------------------------------------
-echo -e "${Green}"
-cat << EOF
- -----------------------------------------------------------------------------
+echo -e "${Cyan}
+ --------------------------------------------------------
+ La cuenta de administrador por defecto es: ${BGreen}Administrator${ColorOff}
+ ${Cyan}Ingrese una contraseña compleja con mas de 7 caracteres.
+ ${BGreen}Por favor utilice letras, números y simbolos.${ColorOff}${Cyan}
+ --------------------------------------------------------
+${ColorOff}"
 
- CONTRASEÑA DE ADMINISTRADOR -- DEBE CUMPLIR CON LOS REQUISITOS DE COMPLEJIDAD
-
- -----------------------------------------------------------------------------
-EOF
-echo
-printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " Contraseña de administrador: " "$(tput sgr0)"
+printf '%s%s%s%s' "$(tput setaf 3)" "$(tput blink)" " PASSWORD: " "$(tput sgr0)"
 
 unset PASSWORD
 unset CHARCOUNT
@@ -153,7 +189,7 @@ unset CHARCOUNT
 stty -echo
 
 CHARCOUNT=0
-while IFS= read -p "$PROMPT" -r -s -n 1 CHAR
+while IFS= read -p "${PROMPT:-}" -r -s -n 1 CHAR
 do
     # Enter - accept password
     if [[ $CHAR == $'\0' ]] ; then
@@ -209,7 +245,7 @@ cat << EOF > /etc/samba/smb.conf
     netbios name = ${NETBIOS^^}
     realm = ${REALM^^}
     server role = active directory domain controller
-    server string = Samba4 AD DC Server
+    server string = Samba AD DC Server
     workgroup = ${DOMAIN^^}
     idmap_ldb:use rfc2307 = yes
     allow dns updates = nonsecure
@@ -310,10 +346,10 @@ adjustSamba=(
     "systemctl enable samba-ad-dc"
 )
 
-for ((i=0;i<=5;++i))
-do
-    eval "${adjustSamba[$i]}" &>/dev/null
-done
+#-------------------------------------------------
+# Iniciando aprovisionamiento Active Directory
+#-------------------------------------------------
+msg_info "Active Directory Provisioning"
 
 samba-tool domain provision \
     --use-rfc2307 \
@@ -321,18 +357,23 @@ samba-tool domain provision \
     --dns-backend=SAMBA_INTERNAL \
     --realm="${REALM^^}" \
     --domain="${DOMAIN^^}" \
-    --adminpass="${ADMINPASS}"
+    --adminpass="${ADMINPASS}" &>/dev/null
 
-echo
+for ((i=0;i<=5;++i))
+do
+    eval "${adjustSamba[$i]:-}" &>/dev/null
+done
+
+sleep 10
+msg_ok "Completed Successfully!\n"
 
 #-------------------------------------------------
 # And finally, we'll start the Samba AD DC service:
 #-------------------------------------------------
 systemctl start samba-ad-dc
-
 samba-tool domain level show
 
-echo -e $BWhite; read -p ' Press [Enter] key to continue...'; echo -e $ColorOff
+echo -e "${Yellow}"; read -p " Press [Enter] key to continue..."; echo -e "${ColorOff}"
 
 #-------------------------------------------------
 # Look up the DC's AD DNS record:
@@ -344,7 +385,7 @@ host -t SRV _ldap._tcp.${REALM,,}
 host -t SRV _kerberos._tcp.${REALM,,}
 host -t SRV _kerberos._udp.${REALM,,}
 
-echo -e $BWhite; read -p ' Press [Enter] key to continue...'; echo -e $ColorOff
+echo -e "${Yellow}"; read -p " Press [Enter] key to continue..."; echo -e "${ColorOff}"
 
 echo ${ADMINPASS} | kinit Administrator
 klist
@@ -363,9 +404,9 @@ smbclient //localhost/netlogon -UAdministrator%"${ADMINPASS}" -c 'ls'
 
 cp -a /var/lib/samba/sysvol /home
 setfacl -m g:users:rwx /home/sysvol
-setfacl -m g:users:rwx /var/lib/samba/sysvol/${REALM,,}/scripts
+setfacl -m g:users:rwx /var/lib/samba/sysvol/"${REALM,,}"/scripts
 
-echo -e "$Purple \n Congratulations! everything has been installed.\n"
+echo -e "${Purple} \n Congratulations! everything has been installed.\n"
 #---
 echo "                                                                 _____      ";
 echo "                                                                /    /      ";
@@ -383,5 +424,5 @@ echo "            \`--'  \`\"                           \`--'  \`\"           /_
 #---
 echo
 echo " Powered by GNU/Linux Debian Rules :) Enjoy It's!"
-echo -e "$ColorOff"
+echo -e "${ColorOff}"
 
