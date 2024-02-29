@@ -120,12 +120,15 @@ msg_ok "Completed Successfully!\n"
 msg_info "Installing samba and its dependencies"
 DEBIAN_FRONTEND=noninteractive apt -y install \
     samba smbclient krb5-user winbind libpam-winbind \
-    libnss-winbind xattr sudo acl bc &>/dev/null
+    libnss-winbind systemd-resolved xattr sudo acl bc &>/dev/null
 #-------------------------------------------------
 # Tweaks to samba services
 #-------------------------------------------------
 systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
 systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
+systemctl enable systemd-resolved
+systemctl start systemd-resolved
+
 msg_ok "Completed Successfully!\n"
 sleep 2s
 

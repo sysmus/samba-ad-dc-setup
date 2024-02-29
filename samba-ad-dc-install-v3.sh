@@ -149,6 +149,7 @@ debconf-apt-progress -- apt -y install \
     smbclient \
     libpam-winbind \
     libnss-winbind \
+    systemd-resolved \
     krb5-user \
     winbind \
     xattr \
@@ -160,6 +161,8 @@ debconf-apt-progress -- apt -y install \
 #-------------------------------------------------
 systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &> /dev/null
 systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &> /dev/null
+systemctl enable systemd-resolved
+systemctl start systemd-resolved
 
 #-------------------------------------------------
 # Now we'll copy the krb5.conf

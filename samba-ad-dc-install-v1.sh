@@ -100,13 +100,15 @@ apt update && apt -y dist-upgrade
 #-------------------------------------------------
 echo -e "${Cyan} \n Installing samba and its dependencies\n ${ColorOff}"
 DEBIAN_FRONTEND=noninteractive apt -y install \
-    samba smbclient krb5-user winbind libpam-winbind libnss-winbind xattr sudo acl bc
+    samba smbclient krb5-user winbind libpam-winbind libnss-winbind systemd-resolved xattr sudo acl bc
 
 #-------------------------------------------------
 # Tweaks to samba services
 #-------------------------------------------------
 systemctl stop samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
 systemctl disable samba-ad-dc.service smbd.service nmbd.service winbind.service &>/dev/null
+systemctl enable systemd-resolved
+systemctl start systemd-resolved
 
 clear
 header_info
