@@ -35,8 +35,8 @@ You can click the Preview link to take a look at your changes.
 8. Deshabilite las herramientas, como resolvconf, que actualizan automáticamente su archivo de configuración de resolución de DNS /etc/resolv.conf. Los AD DC y los miembros del dominio deben usar un servidor DNS que pueda resolver las zonas AD DNS.
 
 >Este script fue testeado con excelentes resultados y puesto en producción en diferentes ambientes sistematizados, como por ejemplo:
+>    - Máquinas virtuales en Proxmox, VMware, VirtualBox, Hyper-V
 >    - Contenedores LXC usados en Proxmox VE v7/8
->    - Máquinas virtuales en VMware Esxi7/8, VirtualBox, HyperV
 >    - Servidores físicos usados en pruebas
 >    - - HPE ProLiant DL380 Gen10 server
 >    - - DELL PowerEdge R720/830
