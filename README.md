@@ -37,7 +37,7 @@ You can click the Preview link to take a look at your changes.
 >Este script fue testeado con excelentes resultados y puesto en producción en diferentes ambientes sistematizados, como por ejemplo:
 >    - Máquinas virtuales en Proxmox, VMware, VirtualBox, Hyper-V
 >    - Contenedores LXC usados en Proxmox VE v7/8
->    - Servidores físicos usados en pruebas y producción
+>    - Servidores usados en pruebas y producción
 >    - - HPE ProLiant DL380 Gen10 server
 >    - - DELL PowerEdge R720/830
 
