@@ -39,7 +39,7 @@ You can click the Preview link to take a look at your changes.
 >    - Máquinas virtuales en VMware Esxi7/8, VirtualBox, HyperV
 >    - Servidores físicos usados en pruebas
 >    - - HPE ProLiant DL380 Gen10 server
->    - - DELL PowerEdge R720
+>    - - DELL PowerEdge R720/830
 
 ## Enjoy It!
 <img src=https://www.debian.org/Pics/debian-logo-1024x576.png alt="debian" width="256" />
