@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------------------
-# Autor: Oficinas CAYRO -- sysmus@hotmail.com
+# Autor: Oficinas CAYRO <sysmus@hotmail.com>
 # Fecha: Diciembre 2015
 # ---------------------------------------------------------------------------------------
 # DESCRIPCIÓN:
